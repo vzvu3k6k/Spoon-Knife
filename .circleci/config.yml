@@ -18,10 +18,8 @@ orbs:
                   fi
 
                   gem install bundler --no-document --version $BUNDLER_VERSION
-                  bundle _${BUNDLER_VERSION}_ install
-                else
-                  bundle install
                 fi
+                bundle install
 
 jobs:
   build:
