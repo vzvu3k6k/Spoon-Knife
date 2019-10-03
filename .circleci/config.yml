@@ -1,0 +1,71 @@
+version: 2.1
+
+orbs:
+  ruby:
+    commands:
+      install-deps:
+        steps:
+          - run:
+              name: 'bundle install'
+              command: |
+                if [ -e Gemfile.lock ]; then
+                  # Extract bundler version from Gemfile.lock
+                  BUNDLER_VERSION=$(sed -n "/BUNDLED WITH/{n; s/^\\s*//; p;}" Gemfile.lock)
+
+                  # If Gemfile.lock does not have bundler version, use the latest 1.9.x.
+                  if [ -z $BUNDLER_VERSION ]; then
+                    BUNDLER_VERSION=1.9.10
+                  fi
+
+                  gem install bundler --no-document --version $BUNDLER_VERSION
+                  bundle _${BUNDLER_VERSION}_ install
+                else
+                  bundle install
+                fi
+
+jobs:
+  build:
+    docker:
+      - image: circleci/ruby:latest
+    steps:
+      - run: |
+          cat \<<RUBY > Gemfile
+          source 'https://rubygems.org'
+          gem 'empty'
+          RUBY
+      - ruby/install-deps # Use default bundler
+      - run:
+          name: "Add Gemfile.lock with BUNDLED WITH: 2.0.0"
+          command: |
+            cat \<<HERE > Gemfile.lock
+            GEM
+              remote: https://rubygems.org/
+              specs:
+                empty (1.0.0)
+
+            PLATFORMS
+              ruby
+
+            DEPENDENCIES
+              empty
+
+            BUNDLED WITH
+              2.0.0
+            HERE
+      - ruby/install-deps # Use bundler 2.0.0
+      - run:
+          name: "Add Gemfile.lock without BUNDLED WITH"
+          command: |
+            cat \<<HERE > Gemfile.lock
+            GEM
+              remote: https://rubygems.org/
+              specs:
+                empty (1.0.0)
+
+            PLATFORMS
+              ruby
+
+            DEPENDENCIES
+              empty
+            HERE
+      - ruby/install-deps # Use bundler 1.9.10
