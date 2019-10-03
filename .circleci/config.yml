@@ -6,7 +6,7 @@ orbs:
       install-deps:
         steps:
           - run:
-              name: 'bundle install'
+              name: 'Install a proper version of bundler'
               command: |
                 if [ -e Gemfile.lock ]; then
                   # Extract bundler version from Gemfile.lock
@@ -19,7 +19,7 @@ orbs:
 
                   gem install bundler --no-document --version $BUNDLER_VERSION
                 fi
-                bundle install
+          - run: bundle install
 
 jobs:
   build:
